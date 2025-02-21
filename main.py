@@ -19,15 +19,14 @@ def process_line(line):
     if 'START' in line or 'STOP' in line:
         return None
 
-    # 先移除行首所有 "*" 與前導空白（假設行首可能有多個 "*"）
+    # 移除行首所有 "*" 與前導空白（可能有多個 "*"）
     line = re.sub(r'^[ \t]*\*+[ \t]*', '', line)
     if not line:
         return None
 
-    # 假設目標字串（第一欄）位於行首，並以至少兩個空白作為分隔符
+    # 假設目標字串位於行首，並以至少兩個空白分隔後，餘下部分為正確拼寫資訊
     m = re.match(r'^(.*?)\s{2,}(.*)$', line)
     if not m:
-        # 若找不到兩個以上的空白分隔，則無法判斷目標欄，跳過此行
         return None
 
     target_field = m.group(1).strip()
@@ -37,28 +36,33 @@ def process_line(line):
     if len(target_field.split()) != 1:
         return None
 
-    # 將剩餘部分移除 < 與 > 符號
+    # 移除剩餘部分中的 < 與 > 符號
     rest = re.sub(r'[<>]', '', rest)
-    # 以空白拆分取得所有可能的正確拼寫項目
+    # 以空白拆分取得所有可能正確拼寫項目
     correct_spellings = rest.split()
     second = "\n".join(correct_spellings)
 
     return (target_field, second)
 
 def main():
-    # 讀取檔案名稱參數，預設 input.txt
-    input_file = sys.argv[1] if len(sys.argv) > 1 else f'{os.path.expanduser('~')}/.config/plover/clippy_2.org'
+    # 若未提供檔案名稱，預設讀取 ~/.config/plover/clippy_2.org
+    input_file = sys.argv[1] if len(sys.argv) > 1 else f"{os.path.expanduser('~')}/.config/plover/clippy_2.org"
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'output.csv'
 
     rows = []
+    seen_targets = set()  # 用以避免重複目標字
     with open(input_file, encoding='utf-8') as f:
         for line in f:
             line = line.rstrip('\n')
             processed = process_line(line)
             if processed:
-                rows.append(processed)
+                target, second = processed
+                if target in seen_targets:
+                    continue
+                seen_targets.add(target)
+                rows.append((target, second))
 
-    # 輸出 CSV 檔案，第二欄的換行符號將自動以引號處理
+    # 輸出 CSV 檔案，CSV 模組會自動處理欄位中包含換行符號的情況
     with open(output_file, 'w', newline='', encoding='utf-8') as f_out:
         writer = csv.writer(f_out)
         for row in rows:
