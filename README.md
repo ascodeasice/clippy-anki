@@ -12,3 +12,6 @@ Where the first field is the word and the second field is all suggested spelling
 
 1. `python ./main.py ~/.config/plover/clippy_2.org`
 2. Import the csv file in anki as the deck
+
+> [!NOTE]
+> It's recommended to ignore existing cards when importing csv file
