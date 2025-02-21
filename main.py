@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import re
 import csv
 import sys
@@ -46,7 +47,7 @@ def process_line(line):
 
 def main():
     # 讀取檔案名稱參數，預設 input.txt
-    input_file = sys.argv[1] if len(sys.argv) > 1 else 'input.txt'
+    input_file = sys.argv[1] if len(sys.argv) > 1 else f'{os.path.expanduser('~')}/.config/plover/clippy_2.org'
     output_file = sys.argv[2] if len(sys.argv) > 2 else 'output.csv'
 
     rows = []
